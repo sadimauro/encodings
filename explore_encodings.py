@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import base64
+import struct
 
 VAL = b'EFG'
 
@@ -32,7 +33,13 @@ vals[13] = 'RUZH\n' # base64-encoded string rep
 # >>> bytes.fromhex('454647')
 # b'EFG'
 
-# str.encode()
+# s.encode(): encode s with given encoding; return bytes.  e.g.
+# >>> s = 'EFG'
+# >>> s.encode() # default is utf-8
+# b'EFG'
+# >>> s.encode('utf-16')
+# b'\xff\xfeE\x00F\x00G\x00'
+
 # struct.unpack()
 # int(), hex(), ord(), str()
 # base64 (and maybe binascii, uu, binhex)
@@ -48,6 +55,72 @@ def main():
     y = bytes.fromhex(x)
     assert VAL == y
 
+    x = getval(2)
+    z = bytes.decode(x) # decodes bytes to str
+    y = bytes.fromhex(z)
+    assert VAL == y
+
+    x = getval(3)
+    z = bytes.fromhex(x)
+    z = bytes.decode(z)
+    x = bytes.fromhex(z)
+    assert VAL == y
+
+    x = getval(4)
+    z = bytes.decode(x)
+    z = bytes.fromhex(z)
+    z = bytes.decode(z)
+    y = bytes.fromhex(z)
+    assert VAL == y
+
+    x = getval(5)
+    y = bytes.fromhex(x)
+    assert VAL == y
+    
+    x = getval(6)
+    z = ''.join(x)
+    y = bytes.fromhex(z)
+    assert VAL == y
+    
+    x = getval(7)
+    z = bytes.fromhex(x)
+    z = bytes.decode(z, 'utf-16')
+    y = z.encode()
+    assert VAL == y
+
+    x = getval(8)
+    z = bytes.decode(x, 'utf-16')
+    y = z.encode()
+    assert VAL == y
+
+    x = getval(9)
+    zlist = []
+    idx = 0
+    INT_LEN = struct.calcsize(">I")
+    while idx < len(x):
+        zlist.append(struct.unpack(">I", x[idx:idx+INT_LEN])[0])
+        idx += INT_LEN
+    y = bytes(zlist)
+    assert VAL == y
+
+    x = getval(10)
+    zlist = []
+    idx = 0
+    SHORT_LEN = struct.calcsize("<H")
+    while idx < len(x):
+        zlist.append(struct.unpack("<H", x[idx:idx+SHORT_LEN])[0])
+        idx += SHORT_LEN
+    y = bytes(zlist)
+    assert VAL == y
+    
+    x = getval(11)
+    y = bytes(x)
+    assert VAL == y
+    
+    x = getval(12)
+    y = x.encode()
+    assert VAL == y
+    
     x = getval(13)
     y = base64.b64decode(x)
     assert VAL == y
